@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#141518">
-    <meta name="description" content="{{ page_description | default: shop.description | default: 'Quiebre: calzado, gorras y accesorios urbanos en Colombia.' | escape }}">
+    <meta name="description" content="{{ page_description | default: shop.description | default: 'Quiebre: calzado y ropa urbana en Colombia.' | escape }}">
     <title>{{ page_title }}{% if current_tags %} — {{ current_tags | join: ', ' }}{% endif %}{% unless page_title contains shop.name %} — {{ shop.name }}{% endunless %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,8 +13,16 @@
     {{ content_for_header }}
   </head>
   <body>
+    {% assign quiebre_all_products = collections['all'] %}
     <a class="skip-link" href="#MainContent">Saltar al contenido</a>
-    <div class="announcement"><span class="announcement-mark" aria-hidden="true">✳</span> QUIEBRE / PRIMER DROP EN PREPARACIÓN</div>
+    <div class="announcement">
+      <span class="announcement-mark" aria-hidden="true">✳</span>
+      {% if quiebre_all_products != blank and quiebre_all_products.products_count > 0 %}
+        QUIEBRE / PRIMER DROP DISPONIBLE
+      {% else %}
+        QUIEBRE / PRIMER DROP EN PREPARACIÓN
+      {% endif %}
+    </div>
     <header class="site-header">
       <div class="header-inner">
         <a class="brand" href="{{ routes.root_url }}" aria-label="Quiebre, inicio">
@@ -22,19 +30,21 @@
           <span><span class="brand-word">QUIEBRE</span><span class="brand-sub">{{ settings.brand_subtitle | default: 'STREET / COLOMBIA' | escape }}</span></span>
         </a>
         <nav class="desktop-nav" aria-label="Navegación principal">
+          <a href="{{ routes.root_url }}#catalogo">Productos</a>
           <a href="{{ routes.root_url }}#categorias">Categorías</a>
           <a href="{{ routes.root_url }}#idea">La idea</a>
-          <a href="{{ routes.root_url }}#catalogo">Primer drop</a>
+          <a href="{{ routes.search_url }}">Buscar</a>
         </nav>
         <div class="header-actions">
-          <a class="header-cta" href="{{ routes.root_url }}#catalogo">Ver qué viene <span aria-hidden="true">↘</span></a>
+          <a class="header-cta" href="{{ routes.root_url }}#catalogo">Ver productos <span aria-hidden="true">↘</span></a>
           <a class="header-cart" href="{{ routes.cart_url }}" aria-label="Bolsa, {{ cart.item_count }} artículos">Bolsa <span>{{ cart.item_count }}</span></a>
           <details class="mobile-menu">
             <summary aria-label="Abrir menú">Menú</summary>
             <nav class="mobile-nav" aria-label="Navegación móvil">
+              <a href="{{ routes.root_url }}#catalogo">Productos</a>
               <a href="{{ routes.root_url }}#categorias">Categorías</a>
               <a href="{{ routes.root_url }}#idea">La idea</a>
-              <a href="{{ routes.root_url }}#catalogo">Primer drop</a>
+              <a href="{{ routes.search_url }}">Buscar productos</a>
               <a href="{{ routes.cart_url }}">Bolsa ({{ cart.item_count }})</a>
             </nav>
           </details>
@@ -47,9 +57,28 @@
     <footer>
       <div class="page footer-inner">
         <a class="footer-brand" href="{{ routes.root_url }}">QUIEBRE</a>
-        <p class="footer-copy">© {{ 'now' | date: '%Y' }} Quiebre · Colombia</p>
-        <p class="footer-note">{{ settings.footer_note | default: 'Catálogo en preparación. Aquí solo aparecerán productos reales.' | escape }}</p>
+        <div class="footer-meta">
+          <p class="footer-copy">© {{ 'now' | date: '%Y' }} Quiebre · Colombia</p>
+          {% if shop.refund_policy != blank or shop.shipping_policy != blank or shop.privacy_policy != blank or shop.terms_of_service != blank %}
+            <nav class="footer-links" aria-label="Ayuda y políticas">
+              {% if shop.refund_policy != blank %}<a href="{{ shop.refund_policy.url }}">Cambios y devoluciones</a>{% endif %}
+              {% if shop.shipping_policy != blank %}<a href="{{ shop.shipping_policy.url }}">Envíos</a>{% endif %}
+              {% if shop.privacy_policy != blank %}<a href="{{ shop.privacy_policy.url }}">Privacidad</a>{% endif %}
+              {% if shop.terms_of_service != blank %}<a href="{{ shop.terms_of_service.url }}">Términos</a>{% endif %}
+            </nav>
+          {% endif %}
+        </div>
+        <p class="footer-note">
+          {% if settings.footer_note != blank %}
+            {{ settings.footer_note | escape }}
+          {% elsif quiebre_all_products != blank and quiebre_all_products.products_count > 0 %}
+            Consulta precio y disponibilidad en cada ficha de producto.
+          {% else %}
+            La compra se activará cuando la selección esté publicada en la tienda.
+          {% endif %}
+        </p>
       </div>
     </footer>
+    {% if request.page_type == 'product' %}<script src="{{ 'quiebre-product.js' | asset_url }}" defer></script>{% endif %}
   </body>
 </html>

@@ -1,19 +1,55 @@
+{% assign quiebre_all_products = collections['all'] %}
+{% assign featured_collection = section.settings.featured_collection %}
+{% if featured_collection == blank or featured_collection.products_count == 0 %}
+  {% assign featured_collection = quiebre_all_products %}
+{% endif %}
+
 <section class="hero" id="inicio" aria-labelledby="hero-title">
   <div class="hero-copy">
     <p class="eyebrow">Una nueva línea urbana</p>
     <h1 id="hero-title">Pisa <span>distinto.</span></h1>
-    <p class="hero-lede">Calzado, gorras y accesorios para cambiarle el ritmo a lo de siempre. Quiebre está tomando forma en Colombia.</p>
+    <p class="hero-lede">Calzado y ropa urbana para salir de la línea. Una selección corta, con espacio para el estilo propio.</p>
     <div class="hero-actions">
-      <a class="button-primary" href="#categorias">Explorar categorías <span class="arrow" aria-hidden="true">↘</span></a>
+      <a class="button-primary" href="#catalogo">Ver productos <span class="arrow" aria-hidden="true">↘</span></a>
       <a class="hero-secondary" href="#idea">Conoce la idea</a>
     </div>
-    <p class="hero-note">La primera selección todavía está en preparación. Las imágenes de esta vista son editoriales, no artículos disponibles para compra.</p>
+    {% if quiebre_all_products != blank and quiebre_all_products.products_count > 0 %}
+      <p class="hero-note">Explora la selección publicada. La disponibilidad y las opciones se muestran en cada ficha.</p>
+    {% else %}
+      <p class="hero-note">Estamos preparando la primera selección. Los productos aparecerán aquí cuando estén disponibles en la tienda.</p>
+    {% endif %}
   </div>
   <figure class="hero-visual" aria-label="Fotografía editorial conceptual de moda urbana">
     <img src="{{ 'quiebre-hero.webp' | asset_url }}" alt="Modelo con ropa urbana sin marcas en una escalera de concreto, con acentos azules" width="2000" height="1125" fetchpriority="high">
     <span class="hero-side-index" aria-hidden="true">CAMBIA LA LÍNEA / 01</span>
     <figcaption class="hero-stamp"><strong>Q / 01</strong>Imagen editorial · concepto</figcaption>
   </figure>
+</section>
+
+<section class="catalog" id="catalogo" aria-labelledby="catalog-title">
+  <div class="page">
+    {% if featured_collection != blank and featured_collection.products_count > 0 %}
+      <div class="section-head">
+        <div><p class="section-kicker">Primer drop / selección real</p><h2 id="catalog-title">La selección.</h2></div>
+        <p>Productos publicados en la tienda, con precio y disponibilidad gestionados desde Shopify.</p>
+      </div>
+      <div class="product-grid">
+        {% for product in featured_collection.products limit: 4 %}
+          {% render 'product-card', product: product %}
+        {% endfor %}
+      </div>
+      <a class="catalog-more" href="{{ featured_collection.url }}">Ver toda la selección <span aria-hidden="true">↗</span></a>
+    {% else %}
+      <div class="catalog-box" role="status">
+        <div class="catalog-copy">
+          <p class="section-kicker">Primer drop / en preparación</p>
+          <h2 id="catalog-title">El catálogo toma forma.</h2>
+          <p>La selección aparecerá aquí cuando los productos estén publicados para compra en la tienda. No mostramos reseñas ni disponibilidad que no estén confirmadas.</p>
+        </div>
+        <div class="catalog-index" aria-hidden="true"><span>00</span></div>
+      </div>
+    {% endif %}
+  </div>
 </section>
 
 <section class="section" id="categorias" aria-labelledby="categories-title">
@@ -23,26 +59,35 @@
         <p class="section-kicker">El universo Quiebre / 01—03</p>
         <h2 id="categories-title">Elige<br>tu terreno.</h2>
       </div>
-      <p>Tres rutas para empezar. Estamos definiendo la selección real antes de activar el catálogo.</p>
+      <p>Explora las categorías disponibles o descubre los productos del primer drop.</p>
     </div>
     <div class="category-grid">
       {% assign footwear = collections['calzado'] %}
-      {% if footwear != blank and footwear.products_count > 0 %}<a class="category-card" href="{{ footwear.url }}">{% else %}<article class="category-card">{% endif %}
+      {% assign footwear_url = '' %}
+      {% assign footwear_label = 'Próximamente' %}
+      {% if footwear != blank and footwear.products_count > 0 %}
+        {% assign footwear_url = footwear.url %}
+        {% assign footwear_label = 'Explorar calzado' %}
+      {% elsif quiebre_all_products != blank and quiebre_all_products.products_count > 0 %}
+        {% assign footwear_url = '#catalogo' %}
+        {% assign footwear_label = 'Ver selección' %}
+      {% endif %}
+      {% if footwear_url != blank %}<a class="category-card" href="{{ footwear_url }}">{% else %}<article class="category-card">{% endif %}
         <img src="{{ 'quiebre-calzado.webp' | asset_url }}" alt="Imagen editorial conceptual de un sneaker sin marca sobre concreto" width="1400" height="1050" loading="lazy">
-        <div class="category-content"><span class="category-number">01 / CALZADO</span><h3>Muévete<br>a tu manera.</h3><span class="category-status">{% if footwear != blank and footwear.products_count > 0 %}Explorar calzado{% else %}Selección en preparación{% endif %}</span></div>
-      {% if footwear != blank and footwear.products_count > 0 %}</a>{% else %}</article>{% endif %}
+        <div class="category-content"><span class="category-number">01 / CALZADO</span><h3>Muévete<br>a tu manera.</h3><span class="category-status">{{ footwear_label }}</span></div>
+      {% if footwear_url != blank %}</a>{% else %}</article>{% endif %}
       {% assign caps = collections['gorras'] %}
       {% if caps != blank and caps.products_count > 0 %}<a class="category-card" href="{{ caps.url }}">{% else %}<article class="category-card">{% endif %}
         <img src="{{ 'quiebre-gorras.webp' | asset_url }}" alt="Retrato editorial conceptual de una persona con gorra lisa sin marca" width="1400" height="1050" loading="lazy">
-        <div class="category-content"><span class="category-number">02 / GORRAS</span><h3>Marca<br>tu ángulo.</h3><span class="category-status">{% if caps != blank and caps.products_count > 0 %}Explorar gorras{% else %}Selección en preparación{% endif %}</span></div>
+        <div class="category-content"><span class="category-number">02 / GORRAS</span><h3>Marca<br>tu ángulo.</h3><span class="category-status">{% if caps != blank and caps.products_count > 0 %}Explorar gorras{% else %}Próximamente{% endif %}</span></div>
       {% if caps != blank and caps.products_count > 0 %}</a>{% else %}</article>{% endif %}
       {% assign accessories = collections['accesorios'] %}
       {% if accessories != blank and accessories.products_count > 0 %}<a class="category-card" href="{{ accessories.url }}">{% else %}<article class="category-card">{% endif %}
         <img src="{{ 'quiebre-accesorios.webp' | asset_url }}" alt="Imagen editorial conceptual de bolso cruzado, gafas y medias sin marca" width="1400" height="1050" loading="lazy">
-        <div class="category-content"><span class="category-number">03 / ACCESORIOS</span><h3>Detalles<br>con intención.</h3><span class="category-status">{% if accessories != blank and accessories.products_count > 0 %}Explorar accesorios{% else %}Selección en preparación{% endif %}</span></div>
+        <div class="category-content"><span class="category-number">03 / ACCESORIOS</span><h3>Detalles<br>con intención.</h3><span class="category-status">{% if accessories != blank and accessories.products_count > 0 %}Explorar accesorios{% else %}Próximamente{% endif %}</span></div>
       {% if accessories != blank and accessories.products_count > 0 %}</a>{% else %}</article>{% endif %}
     </div>
-    <div class="editorial-note"><span>Fotografía conceptual generada para la dirección visual.</span><span>No representa productos específicos del catálogo.</span></div>
+    <div class="editorial-note"><span>Imágenes conceptuales de dirección visual.</span><span>No representan productos específicos del catálogo.</span></div>
   </div>
 </section>
 
@@ -54,42 +99,15 @@
   </div>
 </section>
 
-<section class="catalog" id="catalogo" aria-labelledby="catalog-title">
-  <div class="page">
-    {% assign featured_collection = section.settings.featured_collection %}
-    {% if featured_collection != blank and featured_collection.products_count > 0 %}
-      <div class="section-head">
-        <div><p class="section-kicker">Primer drop / selección real</p><h2 id="catalog-title">Ya está aquí.</h2></div>
-        <p>Productos publicados y disponibles en la tienda.</p>
-      </div>
-      <div class="product-grid">
-        {% for product in featured_collection.products limit: 4 %}
-          {% render 'product-card', product: product %}
-        {% endfor %}
-      </div>
-      <a class="catalog-more" href="{{ featured_collection.url }}">Ver toda la selección <span aria-hidden="true">↗</span></a>
-    {% else %}
-      <div class="catalog-box" role="status">
-        <div class="catalog-copy">
-          <p class="section-kicker">Primer drop / 00</p>
-          <h2 id="catalog-title">Catálogo en preparación.</h2>
-          <p>Todavía no hay productos publicados. Cuando elijamos artículos reales con el proveedor, aquí aparecerán sus fotos, tallas, precios y disponibilidad confirmados. No mostramos reseñas inventadas.</p>
-        </div>
-        <div class="catalog-index" aria-hidden="true"><span>00</span></div>
-      </div>
-    {% endif %}
-  </div>
-</section>
-
 <section class="editorial" aria-labelledby="editorial-title">
   <div class="page editorial-inner">
     <div>
-      <p class="section-kicker">Una tienda en construcción</p>
+      <p class="section-kicker">Una selección con intención</p>
       <h2 id="editorial-title">Primero, elegir bien.</h2>
     </div>
     <div class="editorial-copy">
-      <p class="draft-label">Manifiesto provisional</p>
-      <p>Quiebre parte de una idea sencilla: el estilo propio no sale de seguir todas las reglas. La tienda empieza con una selección pequeña y honesta; cada producto tendrá que ganarse su lugar antes de aparecer aquí.</p>
+      <p class="draft-label">La idea de Quiebre</p>
+      <p>El estilo propio no sale de seguir todas las reglas. Quiebre parte de esa ruptura: una selección urbana pensada para combinar con la forma de moverse de cada quien.</p>
       <p>Cuando existan compras y opiniones verificables, podremos añadir reseñas reales. Por ahora, dejamos ese espacio libre.</p>
     </div>
   </div>

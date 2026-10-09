@@ -1,39 +1,58 @@
-<section class="page product-main">
-  <div class="product-gallery">
-    {% if product.featured_media %}
-      {% assign product_image_alt = product.featured_media.alt | default: product.title | escape %}
-      {{ product.featured_media | image_url: width: 1400 | image_tag: loading: 'eager', class: 'product-main-image', alt: product_image_alt }}
+{% assign current_variant = product.selected_or_first_available_variant %}
+<section class="page product-main" data-product-root>
+  <div class="product-gallery" aria-label="Fotos de {{ product.title | escape }}">
+    {% if product.images.size > 0 %}
+      <div class="product-gallery-grid">
+        {% for product_image in product.images %}
+          {% assign product_image_alt = product_image.alt | default: product.title | escape %}
+          {% assign image_loading = 'lazy' %}
+          {% if forloop.first %}{% assign image_loading = 'eager' %}{% endif %}
+          <figure class="product-gallery-item" data-media-id="{{ product_image.id }}">
+            {{ product_image | image_url: width: 1600 | image_tag: loading: image_loading, class: 'product-main-image', alt: product_image_alt }}
+          </figure>
+        {% endfor %}
+      </div>
     {% else %}
-      <div class="product-image-empty" aria-label="Imagen del producto pendiente">Imagen pendiente</div>
+      <div class="product-image-empty" role="img" aria-label="Imagen del producto pendiente">Imagen pendiente</div>
     {% endif %}
   </div>
   <div class="product-info">
     <p class="section-kicker">Quiebre / producto</p>
     <h1>{{ product.title | escape }}</h1>
-    <p class="product-price">{{ product.selected_or_first_available_variant.price | money }}</p>
+    <p class="product-price" aria-live="polite">
+      <span data-product-price>{{ current_variant.price | money }}</span>
+      <s data-product-compare{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{% if current_variant.compare_at_price > current_variant.price %}{{ current_variant.compare_at_price | money }}{% endif %}</s>
+    </p>
     {% if product.description != blank %}<div class="product-description rte">{{ product.description }}</div>{% endif %}
     {% form 'product', product, class: 'product-form' %}
       {% if product.has_only_default_variant %}
-        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        <input type="hidden" name="id" value="{{ current_variant.id }}">
       {% else %}
-        <label for="VariantSelect-{{ section.id }}">Presentación</label>
-        <select id="VariantSelect-{{ section.id }}" name="id">
+        <label for="VariantSelect-{{ section.id }}">Color y talla</label>
+        <select id="VariantSelect-{{ section.id }}" name="id" data-product-variant aria-describedby="VariantHelp-{{ section.id }}">
           {% for variant in product.variants %}
-            <option value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
-              {{ variant.title | escape }} — {{ variant.price | money }}{% unless variant.available %} / Agotado{% endunless %}
-            </option>
+            <option
+              value="{{ variant.id }}"
+              {% if variant == current_variant %}selected{% endif %}
+              {% unless variant.available %}disabled{% endunless %}
+              data-available="{% if variant.available %}true{% else %}false{% endif %}"
+              data-price="{{ variant.price | money | escape }}"
+              data-compare-price="{% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | escape }}{% endif %}"
+              data-has-compare="{% if variant.compare_at_price > variant.price %}true{% else %}false{% endif %}"
+            >{{ variant.title | escape }}{% unless variant.available %} — Agotado{% endunless %}</option>
           {% endfor %}
         </select>
+        <p class="form-help" id="VariantHelp-{{ section.id }}">Elige una opción disponible para continuar.</p>
       {% endif %}
       <label for="Quantity-{{ section.id }}">Cantidad</label>
-      <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="{{ product.selected_or_first_available_variant.inventory_quantity | default: 99 }}">
-      <button class="button-primary product-add" type="submit" name="add" {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
-        {% if product.selected_or_first_available_variant.available %}Agregar a la bolsa{% else %}Agotado{% endif %}
+      <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" inputmode="numeric">
+      <button class="button-primary product-add" type="submit" name="add" data-product-add {% unless current_variant.available %}disabled{% endunless %}>
+        <span data-product-add-label>{% if current_variant.available %}Agregar a la bolsa{% else %}Agotado{% endif %}</span>
         <span class="arrow" aria-hidden="true">↗</span>
       </button>
       {% if section.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}
     {% endform %}
-    <p class="product-availability">{% if product.selected_or_first_available_variant.available %}Disponibilidad confirmada en la tienda.{% else %}Este producto no está disponible actualmente.{% endif %}</p>
+    <p class="product-availability" data-product-availability aria-live="polite">{% if current_variant.available %}Esta variante aparece disponible.{% else %}Esta variante está agotada.{% endif %}</p>
   </div>
 </section>
 
