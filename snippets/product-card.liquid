@@ -1,0 +1,17 @@
+<article class="product-card">
+  <a class="product-card-link" href="{{ product.url }}">
+    <div class="product-card-media">
+      {% if product.featured_image %}
+        {% assign product_card_alt = product.featured_image.alt | default: product.title | escape %}
+        {{ product.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', alt: product_card_alt }}
+      {% else %}
+        <div class="product-image-empty">Imagen pendiente</div>
+      {% endif %}
+      {% unless product.available %}<span class="product-badge">Agotado</span>{% endunless %}
+    </div>
+    <div class="product-card-copy">
+      <h3>{{ product.title | escape }}</h3>
+      <p>{{ product.price | money }}{% if product.compare_at_price > product.price %}<s>{{ product.compare_at_price | money }}</s>{% endif %}</p>
+    </div>
+  </a>
+</article>

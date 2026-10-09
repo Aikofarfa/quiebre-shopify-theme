@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "quiebre-home",
+      "settings": {
+        "featured_collection": ""
+      }
+    }
+  },
+  "order": ["main"]
+}

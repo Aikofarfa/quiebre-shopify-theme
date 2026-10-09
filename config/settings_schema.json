@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Información de marca",
+    "settings": [
+      {
+        "type": "text",
+        "id": "brand_subtitle",
+        "label": "Descriptor de marca",
+        "default": "STREET / COLOMBIA"
+      },
+      {
+        "type": "text",
+        "id": "footer_note",
+        "label": "Nota del pie de página",
+        "default": "Catálogo en preparación. Aquí solo aparecerán productos reales."
+      }
+    ]
+  }
+]

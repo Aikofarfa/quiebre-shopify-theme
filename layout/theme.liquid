@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code | default: 'es-CO' }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#141518">
+    <meta name="description" content="{{ page_description | default: shop.description | default: 'Quiebre: calzado, gorras y accesorios urbanos en Colombia.' | escape }}">
+    <title>{{ page_title }}{% if current_tags %} — {{ current_tags | join: ', ' }}{% endif %}{% unless page_title contains shop.name %} — {{ shop.name }}{% endunless %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {{ 'quiebre.css' | asset_url | stylesheet_tag }}
+    {{ content_for_header }}
+  </head>
+  <body>
+    <a class="skip-link" href="#MainContent">Saltar al contenido</a>
+    <div class="announcement"><span class="announcement-mark" aria-hidden="true">✳</span> QUIEBRE / PRIMER DROP EN PREPARACIÓN</div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="{{ routes.root_url }}" aria-label="Quiebre, inicio">
+          <img src="{{ 'quiebre-mark.webp' | asset_url }}" alt="" width="34" height="34">
+          <span><span class="brand-word">QUIEBRE</span><span class="brand-sub">{{ settings.brand_subtitle | default: 'STREET / COLOMBIA' | escape }}</span></span>
+        </a>
+        <nav class="desktop-nav" aria-label="Navegación principal">
+          <a href="{{ routes.root_url }}#categorias">Categorías</a>
+          <a href="{{ routes.root_url }}#idea">La idea</a>
+          <a href="{{ routes.root_url }}#catalogo">Primer drop</a>
+        </nav>
+        <div class="header-actions">
+          <a class="header-cta" href="{{ routes.root_url }}#catalogo">Ver qué viene <span aria-hidden="true">↘</span></a>
+          <a class="header-cart" href="{{ routes.cart_url }}" aria-label="Bolsa, {{ cart.item_count }} artículos">Bolsa <span>{{ cart.item_count }}</span></a>
+          <details class="mobile-menu">
+            <summary aria-label="Abrir menú">Menú</summary>
+            <nav class="mobile-nav" aria-label="Navegación móvil">
+              <a href="{{ routes.root_url }}#categorias">Categorías</a>
+              <a href="{{ routes.root_url }}#idea">La idea</a>
+              <a href="{{ routes.root_url }}#catalogo">Primer drop</a>
+              <a href="{{ routes.cart_url }}">Bolsa ({{ cart.item_count }})</a>
+            </nav>
+          </details>
+        </div>
+      </div>
+    </header>
+    <main id="MainContent" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+    <footer>
+      <div class="page footer-inner">
+        <a class="footer-brand" href="{{ routes.root_url }}">QUIEBRE</a>
+        <p class="footer-copy">© {{ 'now' | date: '%Y' }} Quiebre · Colombia</p>
+        <p class="footer-note">{{ settings.footer_note | default: 'Catálogo en preparación. Aquí solo aparecerán productos reales.' | escape }}</p>
+      </div>
+    </footer>
+  </body>
+</html>

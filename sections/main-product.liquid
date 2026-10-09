@@ -1,0 +1,47 @@
+<section class="page product-main">
+  <div class="product-gallery">
+    {% if product.featured_media %}
+      {% assign product_image_alt = product.featured_media.alt | default: product.title | escape %}
+      {{ product.featured_media | image_url: width: 1400 | image_tag: loading: 'eager', class: 'product-main-image', alt: product_image_alt }}
+    {% else %}
+      <div class="product-image-empty" aria-label="Imagen del producto pendiente">Imagen pendiente</div>
+    {% endif %}
+  </div>
+  <div class="product-info">
+    <p class="section-kicker">Quiebre / producto</p>
+    <h1>{{ product.title | escape }}</h1>
+    <p class="product-price">{{ product.selected_or_first_available_variant.price | money }}</p>
+    {% if product.description != blank %}<div class="product-description rte">{{ product.description }}</div>{% endif %}
+    {% form 'product', product, class: 'product-form' %}
+      {% if product.has_only_default_variant %}
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+      {% else %}
+        <label for="VariantSelect-{{ section.id }}">Presentación</label>
+        <select id="VariantSelect-{{ section.id }}" name="id">
+          {% for variant in product.variants %}
+            <option value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+              {{ variant.title | escape }} — {{ variant.price | money }}{% unless variant.available %} / Agotado{% endunless %}
+            </option>
+          {% endfor %}
+        </select>
+      {% endif %}
+      <label for="Quantity-{{ section.id }}">Cantidad</label>
+      <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="{{ product.selected_or_first_available_variant.inventory_quantity | default: 99 }}">
+      <button class="button-primary product-add" type="submit" name="add" {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
+        {% if product.selected_or_first_available_variant.available %}Agregar a la bolsa{% else %}Agotado{% endif %}
+        <span class="arrow" aria-hidden="true">↗</span>
+      </button>
+      {% if section.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}
+    {% endform %}
+    <p class="product-availability">{% if product.selected_or_first_available_variant.available %}Disponibilidad confirmada en la tienda.{% else %}Este producto no está disponible actualmente.{% endif %}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Producto principal",
+  "settings": [
+    { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Mostrar botón de pago dinámico", "default": false }
+  ]
+}
+{% endschema %}

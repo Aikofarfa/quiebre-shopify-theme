@@ -1,0 +1,16 @@
+{
+  "accessibility": {
+    "skip_to_text": "Saltar al contenido",
+    "close": "Cerrar"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Agregar a la bolsa",
+      "sold_out": "Agotado"
+    }
+  },
+  "cart": {
+    "title": "Tu bolsa",
+    "checkout": "Continuar al pago"
+  }
+}
