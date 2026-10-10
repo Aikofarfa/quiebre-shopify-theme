@@ -5,7 +5,17 @@
       "settings": {
         "show_dynamic_checkout": false
       }
+    },
+    "product_films": {
+      "type": "quiebre-product-films",
+      "settings": {}
+    },
+    "product_reviews": {
+      "type": "quiebre-product-reviews",
+      "blocks": {},
+      "block_order": [],
+      "settings": {}
     }
   },
-  "order": ["main"]
+  "order": ["main", "product_films", "product_reviews"]
 }

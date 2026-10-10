@@ -1,0 +1,36 @@
+{% assign product_has_video = false %}
+{% for media in product.media %}
+  {% if media.media_type == 'video' or media.media_type == 'external_video' %}{% assign product_has_video = true %}{% endif %}
+{% endfor %}
+{% if product_has_video %}
+  <section class="product-film-section" aria-labelledby="ProductFilmHeading-{{ section.id }}">
+    <div class="page">
+      <header class="product-lower-heading">
+        <p class="section-kicker">Quiebre / en movimiento</p>
+        <h2 id="ProductFilmHeading-{{ section.id }}">Míralo<br>en acción.</h2>
+        <p>Video del producto añadido a su ficha.</p>
+      </header>
+      <div class="product-film-grid">
+        {% for media in product.media %}
+          {% if media.media_type == 'video' or media.media_type == 'external_video' %}
+            <figure class="product-film-item">
+              {% if media.media_type == 'video' %}
+                {{ media | video_tag: controls: true, preload: 'metadata', image_size: '1200x' }}
+              {% else %}
+                {{ media | external_video_tag }}
+              {% endif %}
+              {% if media.alt != blank %}<figcaption>{{ media.alt | escape }}</figcaption>{% endif %}
+            </figure>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Videos del producto",
+  "settings": []
+}
+{% endschema %}

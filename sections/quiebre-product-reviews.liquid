@@ -1,0 +1,35 @@
+{% assign rating_value = product.metafields.reviews.rating.value.rating %}
+{% assign rating_count = product.metafields.reviews.rating_count.value | default: 0 %}
+<section class="product-reviews-section" id="product-reviews" aria-labelledby="ProductReviewsHeading-{{ section.id }}">
+  <div class="page product-reviews-inner">
+    <div class="product-reviews-heading">
+      <p class="section-kicker">Quiebre / comunidad</p>
+      <h2 id="ProductReviewsHeading-{{ section.id }}">Opiniones<br>sin filtro.</h2>
+      {% if rating_value != blank and rating_count > 0 %}
+        <div class="product-reviews-summary" aria-label="Calificación {{ rating_value }} de 5 basada en {{ rating_count }} reseñas">
+          <span aria-hidden="true">★★★★★</span>
+          <strong>{{ rating_value }}</strong>
+          <span>{{ rating_count }} reseñas</span>
+        </div>
+      {% elsif section.blocks.size == 0 %}
+        <p class="product-reviews-empty">Aún no hay reseñas verificadas para este producto. Cuando se conecte una herramienta de reseñas y lleguen opiniones reales, se mostrarán aquí.</p>
+      {% endif %}
+    </div>
+    <div class="product-reviews-content">
+      {% for block in section.blocks %}
+        {% render block %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Reseñas del producto",
+  "settings": [],
+  "blocks": [
+    { "type": "@app" }
+  ],
+  "max_blocks": 3
+}
+{% endschema %}

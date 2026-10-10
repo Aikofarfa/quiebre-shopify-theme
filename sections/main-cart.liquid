@@ -1,38 +1,61 @@
 <section class="page cart-page">
-  <header class="collection-heading">
-    <p class="section-kicker">Quiebre / tu selección</p>
-    <h1>Tu bolsa.</h1>
+  <header class="cart-heading">
+    <p class="section-kicker">Quiebre / paso 01</p>
+    <h1>Tu bolsa<span>.</span></h1>
+    <p class="cart-heading-note">Revisa tu selección antes de continuar al pago.</p>
   </header>
   {% if cart.item_count > 0 %}
     {% form 'cart', cart, class: 'cart-form' %}
-      <div class="cart-items">
+      <div class="cart-items" aria-label="Artículos en la bolsa">
         {% for item in cart.items %}
           {% assign cart_image_alt = item.image.alt | default: item.product.title | escape %}
           <article class="cart-item">
-            <a class="cart-item-image" href="{{ item.url }}">
-              {% if item.image %}{{ item.image | image_url: width: 400 | image_tag: loading: 'lazy', alt: cart_image_alt }}{% endif %}
+            <a class="cart-item-image" href="{{ item.url }}" aria-label="Ver {{ item.product.title | escape }}">
+              {% if item.image %}{{ item.image | image_url: width: 500 | image_tag: loading: 'lazy', alt: cart_image_alt }}{% endif %}
             </a>
             <div class="cart-item-copy">
+              <p class="cart-item-index">Artículo {{ forloop.index | prepend: '0' | slice: -2, 2 }}</p>
               <h2><a href="{{ item.url }}">{{ item.product.title | escape }}</a></h2>
               {% unless item.variant.title == 'Default Title' %}<p>{{ item.variant.title | escape }}</p>{% endunless %}
-              <p>{{ item.final_price | money }} c/u</p>
+              <p class="cart-item-unit">{{ item.final_price | money }} <span>c/u</span></p>
               <label for="Quantity-{{ forloop.index }}">Cantidad</label>
-              <input id="Quantity-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0">
-              <a class="remove-link" href="{{ item.url_to_remove }}">Quitar</a>
+              <input id="Quantity-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" inputmode="numeric">
+              <a class="remove-link" href="{{ item.url_to_remove }}">Quitar de la bolsa</a>
             </div>
             <strong class="cart-line-total">{{ item.final_line_price | money }}</strong>
           </article>
         {% endfor %}
+        <button class="button-secondary cart-update" type="submit" name="update">Actualizar selección</button>
       </div>
-      <div class="cart-summary">
-        <button class="button-secondary" type="submit" name="update">Actualizar bolsa</button>
-        <p class="cart-total">Subtotal <strong>{{ cart.total_price | money }}</strong></p>
-        <p class="cart-disclaimer">Los costos de envío e impuestos se calculan en el siguiente paso.</p>
-        <button class="button-primary" type="submit" name="checkout">Continuar al pago <span class="arrow" aria-hidden="true">↗</span></button>
-      </div>
+      <aside class="cart-summary" aria-label="Resumen de compra">
+        <div class="cart-summary-kicker"><span>Quiebre / checkout</span><span>{{ cart.item_count }} {% if cart.item_count == 1 %}artículo{% else %}artículos{% endif %}</span></div>
+        <h2>Resumen.</h2>
+        <p class="cart-total"><span>Subtotal</span><strong>{{ cart.total_price | money }}</strong></p>
+        <p class="cart-disclaimer">El envío y los impuestos, si aplican, se calculan en el siguiente paso.</p>
+        <button class="button-primary cart-checkout" type="submit" name="checkout">Continuar al pago <span class="arrow" aria-hidden="true">↗</span></button>
+        <p class="cart-checkout-note">El pago continúa en el checkout de Shopify.</p>
+        {% if shop.enabled_payment_types.size > 0 %}
+          <div class="cart-payment-area">
+            <p>Métodos habilitados</p>
+            <ul class="cart-payment-types" aria-label="Métodos de pago habilitados en Shopify">
+              {% for type in shop.enabled_payment_types %}
+                <li>{{ type | payment_type_svg_tag }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </aside>
     {% endform %}
   {% else %}
-    <div class="catalog-box" role="status"><div class="catalog-copy"><p class="section-kicker">Todavía no hay artículos</p><h2>La bolsa está vacía.</h2><p>Cuando publiques productos, podrás volver aquí para revisar tu selección.</p><a class="button-primary" href="{{ routes.root_url }}#catalogo">Volver a explorar <span class="arrow" aria-hidden="true">↗</span></a></div><div class="catalog-index" aria-hidden="true"><span>00</span></div></div>
+    <div class="catalog-box cart-empty" role="status">
+      <div class="catalog-copy">
+        <p class="section-kicker">Todavía no hay artículos</p>
+        <h2>La bolsa está vacía.</h2>
+        <p>Vuelve a la selección y encuentra tu siguiente pieza.</p>
+        <a class="button-primary" href="{{ routes.root_url }}#catalogo">Volver a explorar <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+      <div class="catalog-index" aria-hidden="true"><span>00</span></div>
+    </div>
   {% endif %}
 </section>
 

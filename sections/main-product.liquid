@@ -1,58 +1,122 @@
 {% assign current_variant = product.selected_or_first_available_variant %}
-<section class="page product-main" data-product-root>
-  <div class="product-gallery" aria-label="Fotos de {{ product.title | escape }}">
-    {% if product.images.size > 0 %}
-      <div class="product-gallery-grid">
-        {% for product_image in product.images %}
-          {% assign product_image_alt = product_image.alt | default: product.title | escape %}
-          {% assign image_loading = 'lazy' %}
-          {% if forloop.first %}{% assign image_loading = 'eager' %}{% endif %}
-          <figure class="product-gallery-item" data-media-id="{{ product_image.id }}">
-            {{ product_image | image_url: width: 1600 | image_tag: loading: image_loading, class: 'product-main-image', alt: product_image_alt }}
-          </figure>
-        {% endfor %}
+<section class="page product-page" data-product-root>
+  <nav class="product-breadcrumbs" aria-label="Ruta de navegación">
+    <a href="{{ routes.root_url }}#catalogo">Productos</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ product.title | escape }}</span>
+  </nav>
+
+  <div class="product-main">
+    <div class="product-visuals">
+      <div class="product-gallery" aria-label="Fotos y videos de {{ product.title | escape }}">
+        {% if product.media.size > 0 %}
+          <div class="product-gallery-grid">
+            {% for media in product.media %}
+              {% assign exclude_media = false %}
+              {% if product.title contains 'HODDIE' and media.alt contains 'helmet' %}
+                {% assign exclude_media = true %}
+              {% endif %}
+              {% unless exclude_media %}
+                {% if media.media_type == 'image' or media.media_type == 'model' %}
+                  {% assign media_loading = 'lazy' %}
+                  {% if forloop.first %}{% assign media_loading = 'eager' %}{% endif %}
+                  <figure class="product-gallery-item product-media-{{ media.media_type }}" data-media-id="{{ media.id }}">
+                    {% case media.media_type %}
+                      {% when 'image' %}
+                        {% assign product_media_alt = media.alt | default: product.title | escape %}
+                        {{ media.preview_image | image_url: width: 1800 | image_tag: loading: media_loading, class: 'product-main-image', alt: product_media_alt }}
+                      {% when 'model' %}
+                        {{ media | model_viewer_tag }}
+                    {% endcase %}
+                  </figure>
+                {% endif %}
+              {% endunless %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="product-image-empty" role="img" aria-label="Imagen del producto pendiente">Imagen pendiente</div>
+        {% endif %}
+        <p class="product-image-index"><span>Q / 01</span> · Producto del catálogo</p>
       </div>
-    {% else %}
-      <div class="product-image-empty" role="img" aria-label="Imagen del producto pendiente">Imagen pendiente</div>
-    {% endif %}
-  </div>
-  <div class="product-info">
-    <p class="section-kicker">Quiebre / producto</p>
-    <h1>{{ product.title | escape }}</h1>
-    <p class="product-price" aria-live="polite">
-      <span data-product-price>{{ current_variant.price | money }}</span>
-      <s data-product-compare{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{% if current_variant.compare_at_price > current_variant.price %}{{ current_variant.compare_at_price | money }}{% endif %}</s>
-    </p>
-    {% if product.description != blank %}<div class="product-description rte">{{ product.description }}</div>{% endif %}
-    {% form 'product', product, class: 'product-form' %}
-      {% if product.has_only_default_variant %}
-        <input type="hidden" name="id" value="{{ current_variant.id }}">
+    </div>
+
+    <div class="product-info">
+      <p class="section-kicker">Quiebre / primer drop</p>
+      <h1>{{ product.title | escape }}</h1>
+
+      {% assign rating_value = product.metafields.reviews.rating.value.rating %}
+      {% assign rating_count = product.metafields.reviews.rating_count.value | default: 0 %}
+      {% if rating_value != blank and rating_count > 0 %}
+        <a class="product-rating-link" href="#product-reviews" aria-label="{{ rating_value }} de 5 estrellas, {{ rating_count }} reseñas">
+          <span aria-hidden="true">★★★★★</span><strong>{{ rating_value }}</strong><span>({{ rating_count }} reseñas)</span>
+        </a>
       {% else %}
-        <label for="VariantSelect-{{ section.id }}">Color y talla</label>
-        <select id="VariantSelect-{{ section.id }}" name="id" data-product-variant aria-describedby="VariantHelp-{{ section.id }}">
-          {% for variant in product.variants %}
-            <option
-              value="{{ variant.id }}"
-              {% if variant == current_variant %}selected{% endif %}
-              {% unless variant.available %}disabled{% endunless %}
-              data-available="{% if variant.available %}true{% else %}false{% endif %}"
-              data-price="{{ variant.price | money | escape }}"
-              data-compare-price="{% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | escape }}{% endif %}"
-              data-has-compare="{% if variant.compare_at_price > variant.price %}true{% else %}false{% endif %}"
-            >{{ variant.title | escape }}{% unless variant.available %} — Agotado{% endunless %}</option>
-          {% endfor %}
-        </select>
-        <p class="form-help" id="VariantHelp-{{ section.id }}">Elige una opción disponible para continuar.</p>
+        <a class="product-rating-link product-rating-empty" href="#product-reviews">Reseñas verificadas <span>— aún no disponibles</span></a>
       {% endif %}
-      <label for="Quantity-{{ section.id }}">Cantidad</label>
-      <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" inputmode="numeric">
-      <button class="button-primary product-add" type="submit" name="add" data-product-add {% unless current_variant.available %}disabled{% endunless %}>
-        <span data-product-add-label>{% if current_variant.available %}Agregar a la bolsa{% else %}Agotado{% endif %}</span>
-        <span class="arrow" aria-hidden="true">↗</span>
-      </button>
-      {% if section.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}
-    {% endform %}
-    <p class="product-availability" data-product-availability aria-live="polite">{% if current_variant.available %}Esta variante aparece disponible.{% else %}Esta variante está agotada.{% endif %}</p>
+
+      <p class="product-price" aria-live="polite">
+        <span data-product-price>{{ current_variant.price | money }}</span>
+        <s data-product-compare{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{% if current_variant.compare_at_price > current_variant.price %}{{ current_variant.compare_at_price | money }}{% endif %}</s>
+      </p>
+      {% if product.description != blank %}<div class="product-description rte">{{ product.description }}</div>{% endif %}
+
+      {% form 'product', product, class: 'product-form', data-product-form: '' %}
+        {% unless product.has_only_default_variant %}
+          <div class="product-options">
+            {% for option in product.options_with_values %}
+              {% assign option_index = forloop.index0 %}
+              {% assign selected_option_value = current_variant.options[option_index] %}
+              {% assign option_label = option.name | capitalize %}
+              {% assign option_label_downcase = option.name | downcase %}
+              {% if option_label_downcase contains 'color' %}{% assign option_label = 'Color' %}{% endif %}
+              {% if option_label_downcase contains 'talla' or option_label_downcase contains 'size' %}{% assign option_label = 'Talla' %}{% endif %}
+              <div class="product-option">
+                <label for="ProductOption-{{ section.id }}-{{ option_index }}">{{ option_label | escape }}</label>
+                <select id="ProductOption-{{ section.id }}-{{ option_index }}" data-product-option data-option-index="{{ option_index }}">
+                  {% for value in option.values %}
+                    <option value="{{ value | escape }}"{% if value == selected_option_value %} selected{% endif %}>{{ value | escape }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endfor %}
+          </div>
+        {% endunless %}
+
+        <input type="hidden" name="id" value="{{ current_variant.id }}" data-product-variant-id>
+        <div class="product-quantity">
+          <label for="Quantity-{{ section.id }}">Cantidad</label>
+          <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" inputmode="numeric">
+        </div>
+        <button class="button-primary product-add" type="submit" name="add" data-product-add{% unless current_variant.available %} disabled{% endunless %}>
+          <span data-product-add-label>{% if current_variant.available %}Añadir a la bolsa{% else %}Agotado{% endif %}</span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+        <p class="product-availability" data-product-availability aria-live="polite">
+          {% if current_variant.available %}Esta combinación aparece disponible.{% else %}Esta combinación está agotada.{% endif %}
+        </p>
+        {% if section.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}
+      {% endform %}
+
+      <script type="application/json" data-product-variants>
+        [
+          {% for variant in product.variants %}
+            {
+              "id": {{ variant.id | json }},
+              "options": {{ variant.options | json }},
+              "available": {{ variant.available | json }},
+              "price": {{ variant.price | money | json }},
+              "compare_price": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+              "has_compare": {% if variant.compare_at_price > variant.price %}true{% else %}false{% endif %}
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      </script>
+
+      <div class="product-policy-links" aria-label="Información de compra">
+        {% if shop.shipping_policy != blank %}<a href="{{ shop.shipping_policy.url }}">Envíos <span aria-hidden="true">↗</span></a>{% endif %}
+        {% if shop.refund_policy != blank %}<a href="{{ shop.refund_policy.url }}">Cambios y devoluciones <span aria-hidden="true">↗</span></a>{% endif %}
+      </div>
+    </div>
   </div>
 </section>
 
