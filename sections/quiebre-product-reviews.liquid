@@ -2,31 +2,67 @@
 {% assign rating_count = product.metafields.reviews.rating_count.value | default: 0 %}
 <section class="product-reviews-section" id="product-reviews" aria-labelledby="ProductReviewsHeading-{{ section.id }}">
   <div class="page product-reviews-inner">
-    <div class="product-reviews-heading">
+    <header class="product-reviews-heading">
       <p class="section-kicker">Quiebre / comunidad</p>
-      <h2 id="ProductReviewsHeading-{{ section.id }}">Opiniones<br>sin filtro.</h2>
+      <h2 id="ProductReviewsHeading-{{ section.id }}">Opiniones<br>con contexto.</h2>
       {% if rating_value != blank and rating_count > 0 %}
-        <div class="product-reviews-summary" aria-label="Calificación {{ rating_value }} de 5 basada en {{ rating_count }} reseñas">
-          <span aria-hidden="true">★★★★★</span>
-          <strong>{{ rating_value }}</strong>
-          <span>{{ rating_count }} reseñas</span>
+        {% assign rating_percent = rating_value | times: 20 %}
+        <div class="product-reviews-summary" aria-label="Promedio {{ rating_value }} de 5 basado en {{ rating_count }} opiniones">
+          <span class="review-stars" style="--review-rating: {{ rating_percent }}%" aria-hidden="true">★★★★★</span>
+          <strong>{{ rating_value }}<span class="review-out-of"> / 5</span></strong>
+          <span>{{ rating_count }} opiniones</span>
         </div>
-      {% elsif section.blocks.size == 0 %}
-        <p class="product-reviews-empty">Aún no hay reseñas verificadas para este producto. Cuando se conecte una herramienta de reseñas y lleguen opiniones reales, se mostrarán aquí.</p>
+      {% else %}
+        <p class="product-reviews-empty">Aún no hay reseñas publicadas para este producto. Las opiniones y calificaciones aparecerán cuando se conecte una app y haya respuestas reales.</p>
       {% endif %}
-    </div>
+    </header>
+
     <div class="product-reviews-content">
       {% for block in section.blocks %}
         {% render block %}
       {% endfor %}
     </div>
+
+    {% if section.settings.enable_giscus %}
+      <div class="product-community-comments">
+        <div class="product-community-heading">
+          <p class="section-kicker">Quiebre / conversación</p>
+          <h3>Comentarios<br>sobre esta pieza.</h3>
+          <p>Espacio comunitario público. No es una reseña de compra ni confirma que quien comenta haya comprado el producto.</p>
+        </div>
+        {% if section.settings.giscus_repo != blank and section.settings.giscus_repo_id != blank and section.settings.giscus_category != blank and section.settings.giscus_category_id != blank %}
+          <div
+            class="giscus"
+            data-giscus-widget
+            data-repo="{{ section.settings.giscus_repo | escape }}"
+            data-repo-id="{{ section.settings.giscus_repo_id | escape }}"
+            data-category="{{ section.settings.giscus_category | escape }}"
+            data-category-id="{{ section.settings.giscus_category_id | escape }}"
+            data-lang="es"
+            role="region"
+            aria-label="Comentarios comunitarios sobre {{ product.title | escape }}"
+          >
+            <p class="giscus-status" data-giscus-status role="status">Cargando comentarios…</p>
+          </div>
+          <script src="{{ 'quiebre-reviews.js' | asset_url }}" defer></script>
+        {% elsif request.design_mode %}
+          <p class="product-reviews-empty">Completa los datos de Giscus en la configuración de esta sección para habilitar comentarios comunitarios.</p>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 </section>
 
 {% schema %}
 {
   "name": "Reseñas del producto",
-  "settings": [],
+  "settings": [
+    { "type": "checkbox", "id": "enable_giscus", "label": "Activar comentarios comunitarios (Giscus)", "default": false },
+    { "type": "text", "id": "giscus_repo", "label": "Repositorio público (owner/repo)" },
+    { "type": "text", "id": "giscus_repo_id", "label": "Giscus: repository ID" },
+    { "type": "text", "id": "giscus_category", "label": "Giscus: categoría de Discussion" },
+    { "type": "text", "id": "giscus_category_id", "label": "Giscus: category ID" }
+  ],
   "blocks": [
     { "type": "@app" }
   ],

@@ -47,11 +47,12 @@
       {% assign rating_value = product.metafields.reviews.rating.value.rating %}
       {% assign rating_count = product.metafields.reviews.rating_count.value | default: 0 %}
       {% if rating_value != blank and rating_count > 0 %}
-        <a class="product-rating-link" href="#product-reviews" aria-label="{{ rating_value }} de 5 estrellas, {{ rating_count }} reseñas">
-          <span aria-hidden="true">★★★★★</span><strong>{{ rating_value }}</strong><span>({{ rating_count }} reseñas)</span>
+        {% assign product_rating_percent = rating_value | times: 20 %}
+        <a class="product-rating-link" href="#product-reviews" aria-label="{{ rating_value }} de 5 estrellas, {{ rating_count }} opiniones">
+          <span class="review-stars" style="--review-rating: {{ product_rating_percent }}%" aria-hidden="true">★★★★★</span><strong>{{ rating_value }}</strong><span>({{ rating_count }} opiniones)</span>
         </a>
       {% else %}
-        <a class="product-rating-link product-rating-empty" href="#product-reviews">Reseñas verificadas <span>— aún no disponibles</span></a>
+        <a class="product-rating-link product-rating-empty" href="#product-reviews">Opiniones de clientes <span>— aún no disponibles</span></a>
       {% endif %}
 
       <p class="product-price" aria-live="polite">
